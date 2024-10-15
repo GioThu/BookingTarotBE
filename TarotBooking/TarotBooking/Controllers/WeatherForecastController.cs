@@ -1,33 +1,35 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TarotBooking.Models;
 
 namespace TarotBooking.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+
+    public class TestApi : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<TestApi> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        private readonly BookingTarotContext _context;
+        public TestApi(BookingTarotContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+
+        [HttpGet]
+        public IActionResult GetAll()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+           return Ok(_context.Users.ToList());
         }
+
+        
     }
+
+    
 }
