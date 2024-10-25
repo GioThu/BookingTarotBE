@@ -5,7 +5,6 @@ using TarotBooking.Models;
 
 namespace TarotBooking.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("[controller]")]
 
@@ -23,6 +22,7 @@ namespace TarotBooking.Controllers
 
 
         [HttpGet]
+        [Authorize]
         public IActionResult GetAll()
         {
            return Ok(_context.Users.ToList());
