@@ -18,6 +18,8 @@ namespace TarotBooking.Models
         public string? Name { get; set; }
         public string? Message { get; set; }
         public DateTime? CreateAt { get; set; }
+        public string? Status { get; set; }
+        public string? ImageUrl { get; set; }
 
         public virtual GroupCard? Group { get; set; }
         public virtual ICollection<CardGame> CardGames { get; set; }

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Service.Model.UserModel;
 using TarotBooking.Mappers;
 using TarotBooking.Model.UserModel;
 using TarotBooking.Models;
@@ -11,10 +13,12 @@ namespace TarotBooking.Services.Implementations
     public class UserService : IUserService
     {
         private readonly IUserRepo _userRepo;
+        private readonly IMapper _mapper;
 
-        public UserService(IUserRepo userRepo)
+        public UserService(IUserRepo userRepo, IMapper mapper)
         {
             _userRepo = userRepo;
+            _mapper = mapper;
         }
 
 
@@ -29,7 +33,7 @@ namespace TarotBooking.Services.Implementations
 
         public async Task<List<User>> GetAllUsers()
         {
-            var user = await _userRepo.GetAll();
+            var user = await _userRepo.GetAllBlocked();
 
             if (user == null) throw new Exception("No user in stock!");
 
@@ -58,12 +62,12 @@ namespace TarotBooking.Services.Implementations
 
             return new UserWithImageModel
             {
-                user = user,
+                user = _mapper.Map<UserDto>(user),
                 url = images.Select(img => img.Url).ToList()
             };
         }
 
-        public async Task<List<User>> GetPagedUsersAsync(int pageNumber, int pageSize, string searchTerm)
+        public async Task<PagedUserModel> GetPagedUsersAsync(int pageNumber, int pageSize, string searchTerm)
         {
             var users = await _userRepo.GetAll();
 
@@ -73,11 +77,24 @@ namespace TarotBooking.Services.Implementations
                              .ToList();
             }
 
+            var totalItems = users.Count;
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            // Pagination
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
             var pagedUsers = users.Skip((pageNumber - 1) * pageSize)
                                   .Take(pageSize)
                                   .ToList();
+            var userDtos = _mapper.Map<List<UserDto>>(pagedUsers);
 
-            return pagedUsers;
+            return new PagedUserModel
+            {
+                Users = userDtos,
+                TotalItems = totalItems,
+                TotalPages = totalPages
+            };
         }
 
         public async Task<User?> CreateUser(string fullname, string email)
@@ -94,6 +111,19 @@ namespace TarotBooking.Services.Implementations
             var user = await _userRepo.GetByEmail(email);
             if (user == null) return null;
             return await _userRepo.GetByEmail(email);
+        }
+
+        public async Task<bool> ChangeStatus(string userId)
+        {
+            var user = await _userRepo.GetById(userId);
+
+            if (user == null) throw new Exception("User not found!");
+
+            // Toggle the status
+            user.Status = user.Status == "Active" ? "Blocked" : "Active";
+
+            await _userRepo.Update(user);
+            return true;
         }
     }
 }

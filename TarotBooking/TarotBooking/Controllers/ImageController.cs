@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Threading.Tasks;
 using TarotBooking.Model.ImageModel;
+using TarotBooking.Models;
 using TarotBooking.Services.Implementations;
 using TarotBooking.Services.Interfaces;
 
@@ -29,6 +30,27 @@ public class ImagesController : ControllerBase
         var imageUrl = await _iImageService.CreateImage(createImageModel);
 
         return Ok(new { image = imageUrl });
+    }
+
+    [HttpPost]
+    [Route("UpdateImage")]
+    public async Task<ActionResult<Image>> CreateImageAndDeleteOldImages([FromForm] CreateImageModel createImageDto)
+    {
+        try
+        {
+            var image = await _iImageService.CreateImageAndDeleteOldImages(createImageDto);
+
+            if (image == null)
+            {
+                return BadRequest("Unable to create image or delete old images.");
+            }
+
+            return Ok(image); 
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
 

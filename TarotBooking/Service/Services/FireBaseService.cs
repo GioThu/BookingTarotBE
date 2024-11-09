@@ -41,4 +41,15 @@ public class FirebaseService
             return await storage.Child("images").Child(fileName).GetDownloadUrlAsync();
         }
     }
+
+    public async Task DeleteImageAsync(string imageUrl)
+    {
+        var storage = new FirebaseStorage(_bucket);
+
+        // Lấy tên file từ URL
+        var fileName = Path.GetFileName(new Uri(imageUrl).LocalPath);
+
+        // Xóa file khỏi Firebase Storage
+        await storage.Child("images").Child(fileName).DeleteAsync();
+    }
 }

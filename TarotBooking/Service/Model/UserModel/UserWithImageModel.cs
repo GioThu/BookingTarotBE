@@ -1,11 +1,10 @@
 ﻿
-using TarotBooking.Models;
-
+using Service.Model.UserModel;
 namespace TarotBooking.Model.UserModel
 {
     public class UserWithImageModel
     {
-        public User user { get; set; }
+        public UserDto user { get; set; }
         public List<string> url { get; set; }
     }
 }

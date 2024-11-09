@@ -9,6 +9,6 @@ namespace TarotBooking.Repositories.Interfaces
         Task<bool> Delete(string id);
         Task<Comment?> GetById(string id);
         Task<List<Comment>> GetAll();
-        Task<List<Comment>> GetCommentsByPostIdAsync(string postId, int pageNumber, int pageSize);
+        Task<List<Comment>> GetCommentsByPostIdAsync(string postId);
     }
 }

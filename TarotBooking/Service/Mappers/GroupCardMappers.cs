@@ -10,7 +10,9 @@ namespace TarotBooking.Mappers
             {
                 Id = Utils.Utils.GenerateIdModel("groupCard"),
                 Name = createGroupCardModel.Name,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Description = createGroupCardModel.Description,
+                Status = "Active"
             };
         }
 
@@ -20,7 +22,8 @@ namespace TarotBooking.Mappers
             {
                 Id = updateGroupCardModel.Id,
                 Name = updateGroupCardModel.Name,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Description = updateGroupCardModel.Description
             };
         }
 

@@ -37,5 +37,33 @@ namespace TarotBooking.Services.Implementations
         {
             return await _notificationRepo.GetNotificationsByUserId(userId);
         }
+
+        public async Task MarkNotificationAsRead(string notificationId)
+        {
+            var notification = await _notificationRepo.GetById(notificationId);
+            if (notification == null) throw new Exception("Notification not found");
+
+            notification.IsRead = true;
+            await _notificationRepo.Update(notification);
+        }
+
+        public async Task<(int total, int unread)> GetNotificationCountsByReaderId(string readerId)
+        {
+            var notifications = await _notificationRepo.GetNotificationsByReaderId(readerId);
+            int total = notifications.Count;
+            int unread = notifications.Count(n => n.IsRead == false);
+
+            return (total, unread);
+        }
+
+        public async Task<(int total, int unread)> GetNotificationCountsByUserId(string userId)
+        {
+            var notifications = await _notificationRepo.GetNotificationsByUserId(userId);
+            int total = notifications.Count;
+            int unread = notifications.Count(n => n.IsRead == false);
+
+            return (total, unread);
+        }
+
     }
 }

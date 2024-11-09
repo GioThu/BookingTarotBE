@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using TarotBooking.Model.PostModel;
 using TarotBooking.Models;
 using TarotBooking.Services.Interfaces;
+using AutoMapper;
+using Service.Model.PostModel;
+using BE.Attributes;
+using System.Data;
 
 namespace TarotBooking.Controllers
 {
@@ -11,31 +15,35 @@ namespace TarotBooking.Controllers
     public class PostWebController : ControllerBase
     {
         private readonly IPostService _postService;
-        public PostWebController(IPostService postService)
+        private readonly IMapper _mapper;
+
+        public PostWebController(IPostService postService, IMapper mapper)
         {
             _postService = postService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("posts-list")]
-        public async Task<List<Post>> GetAllPosts()
+        public async Task<List<PostDto>> GetAllPosts()
         {
-            return await _postService.GetAllPosts();
+            var posts = await _postService.GetAllPosts();
+            return _mapper.Map<List<PostDto>>(posts);
         }
-
 
         [HttpPost]
         [Route("update-post")]
-        public async Task<Post?> UpdatePost([FromForm] UpdatePostModel updatePostModel)
+        public async Task<PostDto?> UpdatePost([FromForm] UpdatePostModel updatePostModel)
         {
-            return await _postService.UpdatePost(updatePostModel);
+            var post = await _postService.UpdatePost(updatePostModel);
+            return _mapper.Map<PostDto>(post);
         }
 
         [HttpPost]
         [Route("delete-post")]
-        public async Task<bool> DeletePost([FromForm] Post post)
+        public async Task<bool> DeletePost(string postId)
         {
-            return await _postService.DeletePost(post.Id);
+            return await _postService.DeletePost(postId);
         }
 
         [HttpGet]
@@ -46,7 +54,7 @@ namespace TarotBooking.Controllers
             {
                 var postWithImages = await _postService.GetPostWithImageById(postId);
                 if (postWithImages == null) return NotFound("Post not found.");
-                return Ok(postWithImages);
+                return postWithImages;
             }
             catch (Exception ex)
             {
@@ -58,10 +66,80 @@ namespace TarotBooking.Controllers
         public async Task<IActionResult> GetPagedPosts(int pageNumber = 1, int pageSize = 10, string? searchTerm = "")
         {
             var posts = await _postService.GetPagedPostsAsync(pageNumber, pageSize, searchTerm);
-
             return Ok(posts);
         }
 
+        [HttpGet("GetPagedPostsNew")]
+        public async Task<IActionResult> GetPagedPostsNew(int pageNumber = 1, int pageSize = 10, string? searchTerm = "")
+        {
+            var posts = await _postService.GetPagedPostsNew(pageNumber, pageSize, searchTerm);
+            return Ok(posts);
+        }
 
+        [HttpGet("CountReaderPosts")]
+        public async Task<IActionResult> GetPostCountByReaderId(string readerId)
+        {
+            try
+            {
+                var postCount = await _postService.GetPostCountByReaderId(readerId);
+                return Ok(postCount);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("paged-posts-by-reader")]
+        public async Task<IActionResult> GetPagedPostsByReaderId(string readerId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var pagedPosts = await _postService.GetPagedPostsByReaderIdAsync(readerId, pageNumber, pageSize);
+                return Ok(pagedPosts);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("post-detail/{postId}")]
+        public async Task<IActionResult> GetPostDetailById(string postId)
+        {
+            try
+            {
+                var postDetail = await _postService.GetPostDetailByIdAsync(postId);
+                if (postDetail == null) return NotFound("Post not found.");
+
+                return Ok(postDetail);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("create-post")]
+        public async Task<ActionResult<PostDto>> CreatePost([FromForm] CreatePostModel createPostModel)
+        {
+            try
+            {
+                var post = await _postService.CreatePost(createPostModel);
+
+                if (post == null)
+                {
+                    return BadRequest("Unable to create post.");
+                }
+
+                var postDto = _mapper.Map<PostDto>(post);
+                return CreatedAtAction(nameof(GetPostWithImageById), new { postId = postDto.Id }, postDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

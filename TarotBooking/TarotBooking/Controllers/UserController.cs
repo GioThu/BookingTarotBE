@@ -1,8 +1,13 @@
-﻿    using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TarotBooking.Model.UserModel;
 using TarotBooking.Models;
 using TarotBooking.Services.Interfaces;
+using AutoMapper;
+using Service.Model.UserModel;
+using Microsoft.AspNetCore.Authorization;
+using Service.Model.ReaderModel;
+using TarotBooking.Services.Implementations;
 
 namespace TarotBooking.Controllers
 {
@@ -11,24 +16,29 @@ namespace TarotBooking.Controllers
     public class UserWebController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserWebController(IUserService userService)
+        private readonly IMapper _mapper;
+
+        public UserWebController(IUserService userService, IMapper mapper)
         {
             _userService = userService;
+            _mapper = mapper;
         }
+
 
         [HttpGet]
         [Route("users-list")]
-        public async Task<List<User>> GetAllUsers()
+        public async Task<List<UserDto>> GetAllUsers()
         {
-            return await _userService.GetAllUsers();
+            var users = await _userService.GetAllUsers();
+            return _mapper.Map<List<UserDto>>(users);
         }
-
 
         [HttpPost]
         [Route("update-user")]
-        public async Task<User?> UpdateUser([FromForm] UpdateUserModel updateUserModel)
+        public async Task<UserDto?> UpdateUser([FromForm] UpdateUserModel updateUserModel)
         {
-            return await _userService.UpdateUser(updateUserModel);
+            var user = await _userService.UpdateUser(updateUserModel);
+            return _mapper.Map<UserDto>(user);
         }
 
         [HttpPost]
@@ -58,11 +68,15 @@ namespace TarotBooking.Controllers
         public async Task<IActionResult> GetPagedUsers(int pageNumber = 1, int pageSize = 10, string? searchTerm = "")
         {
             var users = await _userService.GetPagedUsersAsync(pageNumber, pageSize, searchTerm);
-
             return Ok(users);
         }
 
- 
-
+        [HttpPost]
+        [Route("change-user-status")]
+        public async Task<bool> ChangeReaderStatus(string userId)
+        {
+            var user = await _userService.ChangeStatus(userId);
+            return user;
+        }
     }
-}
+ }

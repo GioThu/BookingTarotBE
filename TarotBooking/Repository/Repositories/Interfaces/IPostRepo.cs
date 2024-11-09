@@ -10,5 +10,6 @@ namespace TarotBooking.Repositories.Interfaces
         Task<Post?> GetById(string id);
         Task<List<Post>> GetAll();
         Task<List<Image>> GetPostImagesById(string postId);
+        Task<int> GetPostCountByReaderId(string readerId);
     }
 }

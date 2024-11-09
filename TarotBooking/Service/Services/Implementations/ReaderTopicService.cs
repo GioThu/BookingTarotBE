@@ -1,4 +1,7 @@
-﻿using TarotBooking.Mappers;
+﻿using AutoMapper;
+using Service.Model.ReaderModel;
+using Service.Model.TopicModel;
+using TarotBooking.Mappers;
 using TarotBooking.Model.ReaderTopicModel;
 using TarotBooking.Models;
 using TarotBooking.Repositories.Interfaces;
@@ -10,11 +13,13 @@ namespace TarotBooking.Services.Implementations
     {
         private readonly IReaderTopicRepo _readerTopicRepo;
         private readonly ITopicRepo _topicRepo;
+        private readonly IMapper _mapper;
 
-        public ReaderTopicService(IReaderTopicRepo readerTopicRepo, ITopicRepo topicRep)
+        public ReaderTopicService(IReaderTopicRepo readerTopicRepo, ITopicRepo topicRep, IMapper mapper)
         {
             _readerTopicRepo = readerTopicRepo;
             _topicRepo = topicRep;
+            _mapper = mapper;
         }
 
         public async Task<ReaderTopic?> CreateReaderTopic(CreateReaderTopicModel createReaderTopicDto)
@@ -44,19 +49,18 @@ namespace TarotBooking.Services.Implementations
             return readerTopic.ToList();    
         }
 
-        public async Task<List<Topic>> GetTopicsByReaderIdAsync(string readerId, int pageNumber, int pageSize)
+        public async Task<List<TopicDto>> GetTopicsByReaderIdAsync(string readerId, int pageNumber, int pageSize)
         {
             var listReaderTopic = await _readerTopicRepo.GetReaderTopicsByReaderIdAsync(readerId);
-            if (listReaderTopic == null || !listReaderTopic.Any()) throw new Exception("No readerTopic in stock!");
 
-            var listTopics = new List<Topic>();
+            var listTopics = new List<TopicDto>();
 
             foreach (var readerTopic in listReaderTopic)
             {
                 var topic = await _topicRepo.GetById(readerTopic.TopicId);
                 if (topic != null)
                 {
-                    listTopics.Add(topic);
+                    listTopics.Add(_mapper.Map<TopicDto>(topic));
                 }
             }
             var paginatedTopics = listTopics
@@ -65,6 +69,25 @@ namespace TarotBooking.Services.Implementations
                 .ToList();
 
             return paginatedTopics;
+        }
+
+        public async Task<List<TopicDto>> GetTopicsByReaderIdAsync(string readerId)
+        {
+            var listReaderTopic = await _readerTopicRepo.GetReaderTopicsByReaderIdAsync(readerId);
+
+            var listTopics = new List<TopicDto>();
+
+            foreach (var readerTopic in listReaderTopic)
+            {
+                var topic = await _topicRepo.GetById(readerTopic.TopicId);
+                if (topic != null)
+                {
+                    listTopics.Add(_mapper.Map<TopicDto>(topic));
+                }
+            }
+  
+
+            return listTopics;
         }
     }
 }

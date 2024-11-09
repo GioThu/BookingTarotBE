@@ -1,4 +1,5 @@
-﻿using TarotBooking.Mappers;
+﻿using Service.Model.GroupCardModel;
+using TarotBooking.Mappers;
 using TarotBooking.Model.GroupCardModel;
 using TarotBooking.Model.ImageModel;
 using TarotBooking.Models;
@@ -89,6 +90,37 @@ namespace TarotBooking.Services.Implementations
             var groupCards = await _groupCardRepo.GetGroupCardsByReaderIdAsync(readerId, pageNumber, pageSize);
             return groupCards;
         }
+
+        public async Task<int> GetGroupCardsCountByReaderIdAsync(string readerId)
+        {
+            return await _groupCardRepo.GetGroupCardsCountByReaderIdAsync(readerId);
+        }
+
+        public async Task<List<GroupCardWithImage>> GetGroupCardsWithImageByReaderIdAsync(string readerId, int pageNumber, int pageSize)
+        {
+            var groupCards = await _groupCardRepo.GetGroupCardsByReaderIdAsync(readerId, pageNumber, pageSize);
+
+            var groupCardsWithImages = new List<GroupCardWithImage>();
+
+            foreach (var groupCard in groupCards)
+            {
+                var image = await _imageService.FindImageByGroupIdAsync(groupCard.Id);
+
+                var groupCardWithImage = new GroupCardWithImage
+                {
+                    Id = groupCard.Id,
+                    Name = groupCard.Name,
+                    IsPublic = groupCard.IsPublic,
+                    CreateAt = groupCard.CreateAt,
+                    Url = image?.Url 
+                };
+
+                groupCardsWithImages.Add(groupCardWithImage);
+            }
+
+            return groupCardsWithImages;
+        }
+
 
     }
 }

@@ -10,5 +10,6 @@ namespace TarotBooking.Repositories.Interfaces
         Task<GroupCard?> GetById(string id);
         Task<List<GroupCard>> GetAll();
         Task<List<GroupCard>> GetGroupCardsByReaderIdAsync(string readerId, int pageNumber, int pageSize);
+        Task<int> GetGroupCardsCountByReaderIdAsync(string readerId);
     }
 }

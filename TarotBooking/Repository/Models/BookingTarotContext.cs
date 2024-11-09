@@ -158,10 +158,19 @@ namespace TarotBooking.Models
                     .HasColumnType("text")
                     .HasColumnName("message");
 
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("status");
+
                 entity.Property(e => e.Name)
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("name");
+                entity.Property(e => e.ImageUrl)
+                    .HasMaxLength(500) // Set an appropriate length for URLs
+                    .IsUnicode(false)
+                    .HasColumnName("image_url");
 
                 entity.HasOne(d => d.Group)
                     .WithMany(p => p.Cards)
@@ -318,6 +327,10 @@ namespace TarotBooking.Models
                     .HasMaxLength(100)
                     .IsUnicode(false)
                     .HasColumnName("status");
+
+                entity.Property(e => e.Description)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("description");
             });
 
             modelBuilder.Entity<Image>(entity =>
@@ -458,6 +471,11 @@ namespace TarotBooking.Models
                     .IsUnicode(false)
                     .HasColumnName("user_id");
 
+                entity.Property(e => e.ReaderId)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("reader_id");
+
                 entity.Property(e => e.Status)
                     .HasMaxLength(100)
                     .IsUnicode(false)
@@ -467,11 +485,21 @@ namespace TarotBooking.Models
                     .HasMaxLength(255)
                     .IsUnicode(true)
                     .HasColumnName("title");
+                
+               entity.Property(e => e.Content)
+                    .HasColumnType("text")
+                    .HasColumnName("content");
+
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Posts)
                     .HasForeignKey(d => d.UserId)
                     .HasConstraintName("FK__Post__user_id__3E52440B");
+
+                entity.HasOne(d => d.Reader)
+                    .WithMany(p => p.Posts)
+                    .HasForeignKey(d => d.ReaderId)
+                    .HasConstraintName("FK__Post__reader_id__3F466844");
             });
 
             modelBuilder.Entity<Reader>(entity =>
@@ -514,6 +542,11 @@ namespace TarotBooking.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("phone");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("status");
 
                 entity.Property(e => e.Rating).HasColumnName("rating");
 
@@ -566,6 +599,11 @@ namespace TarotBooking.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("name");
+
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasColumnName("status");
             });
 
             modelBuilder.Entity<Transaction>(entity =>

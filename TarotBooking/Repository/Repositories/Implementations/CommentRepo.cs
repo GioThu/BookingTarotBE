@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 using TarotBooking.Models;
 using TarotBooking.Repositories.Interfaces;
 
@@ -67,20 +68,15 @@ namespace TarotBooking.Repository.Implementations
         }
 
 
-        public async Task<List<Comment>> GetCommentsByPostIdAsync(string postId, int pageNumber, int pageSize)
+        public async Task<List<Comment>> GetCommentsByPostIdAsync(string postId)
         {
             var query = _context.Comments.AsQueryable();
 
-            // Lọc bình luận theo postId
             query = query.Where(comment => comment.PostId == postId);
 
-            // Phân trang
-            var comments = await query.Skip((pageNumber - 1) * pageSize)
-                                       .Take(pageSize)
-                                       .ToListAsync();
+            var comments = await query.ToListAsync();
 
             return comments;
         }
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using TarotBooking.Model.ReaderModel;
+﻿using Service.Model.ReaderModel;
+using TarotBooking.Model.ReaderModel;
 using TarotBooking.Models;
 using TarotBooking.Utils;
 namespace TarotBooking.Mappers
@@ -13,11 +14,20 @@ namespace TarotBooking.Mappers
                 Id = updateReaderModel.Id,
                 Name = updateReaderModel.Name,
                 Phone = updateReaderModel.Phone,
-                Password = updateReaderModel.Password,
-                Rating = updateReaderModel.Rating,
-                Price = (float?)Math.Round(updateReaderModel.Price, 2),
                 Description = updateReaderModel.Description,
                 Dob = updateReaderModel.Dob
+            };
+        }
+
+        public static Reader ToCreateReader(this CreateReaderModel createReaderModel)
+        {
+            return new Reader
+            {
+                Id = Utils.Utils.GenerateIdModel("reader"),
+                Name = createReaderModel.Name,
+                Password = createReaderModel.Password,
+                Email = createReaderModel.Email,
+                Status = "Active"
             };
         }
     }

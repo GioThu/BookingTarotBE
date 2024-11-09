@@ -1,4 +1,5 @@
-﻿using TarotBooking.Model.ReaderTopicModel;
+﻿using Service.Model.TopicModel;
+using TarotBooking.Model.ReaderTopicModel;
 using TarotBooking.Models;
 
 namespace TarotBooking.Services.Interfaces
@@ -8,6 +9,8 @@ namespace TarotBooking.Services.Interfaces
         Task<List<ReaderTopic>> GetAllReaderTopics();
         Task<ReaderTopic?> CreateReaderTopic(CreateReaderTopicModel createReaderTopicModel);
         Task<bool> DeleteReaderTopic(string readerTopicId);
-        Task<List<Topic>> GetTopicsByReaderIdAsync(string readerId, int pageNumber, int pageSize);
+        Task<List<TopicDto>> GetTopicsByReaderIdAsync(string readerId, int pageNumber, int pageSize);
+        Task<List<TopicDto>> GetTopicsByReaderIdAsync(string readerId);
+
     }
 }

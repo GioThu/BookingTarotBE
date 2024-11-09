@@ -10,9 +10,12 @@ namespace TarotBooking.Mappers
             return new Post
             {
                 Id = Utils.Utils.GenerateIdModel("post"),
-                UserId = createPostModel.UserId,
+                ReaderId = createPostModel.ReaderId,
+                Content = createPostModel.Content,
+                Title = createPostModel.Title,
                 Text = createPostModel.Text,
-                CreateAt = Utils.Utils.GetTimeNow()
+                CreateAt = Utils.Utils.GetTimeNow(),
+                Status = "Active"
             };
         }
 
@@ -21,6 +24,8 @@ namespace TarotBooking.Mappers
             return new Post
             {
                 Id = updatePostModel.Id,
+                Content = updatePostModel.Content,
+                Title = updatePostModel.Title,
                 Text = updatePostModel.Text,
                 CreateAt = Utils.Utils.GetTimeNow()
             };

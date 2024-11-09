@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TarotBooking.Model.ReaderModel;
+﻿using Microsoft.AspNetCore.Mvc;
 using TarotBooking.Model.ReaderModel;
 using TarotBooking.Model.ReaderTopicModel;
 using TarotBooking.Models;
-using TarotBooking.Services.Implementations;
 using TarotBooking.Services.Interfaces;
+using AutoMapper;
+using Service.Model.ReaderModel;
+using Service.Model.FollowModel;
+using TarotBooking.Services.Implementations;
 
 namespace TarotBooking.Controllers
 {
@@ -15,25 +16,29 @@ namespace TarotBooking.Controllers
     {
         private readonly IReaderService _readerService;
         private readonly IReaderTopicService _readerTopicService;
-        public ReaderWebController(IReaderService readerService, IReaderTopicService readerTopicService)
+        private readonly IMapper _mapper;
+
+        public ReaderWebController(IReaderService readerService, IReaderTopicService readerTopicService, IMapper mapper)
         {
             _readerService = readerService;
             _readerTopicService = readerTopicService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("readers-list")]
-        public async Task<List<Reader>> GetAllReaders()
+        public async Task<List<ReaderDto>> GetAllReaders()
         {
-            return await _readerService.GetAllReaders();
+            var readers = await _readerService.GetAllReaders();
+            return _mapper.Map<List<ReaderDto>>(readers);
         }
-
 
         [HttpPost]
         [Route("update-reader")]
-        public async Task<Reader?> UpdateReader([FromForm] UpdateReaderModel updateReaderModel)
+        public async Task<ReaderDto?> UpdateReader([FromForm] UpdateReaderModel updateReaderModel)
         {
-            return await _readerService.UpdateReader(updateReaderModel);
+            var reader = await _readerService.UpdateReader(updateReaderModel);
+            return _mapper.Map<ReaderDto>(reader);
         }
 
         [HttpPost]
@@ -51,7 +56,7 @@ namespace TarotBooking.Controllers
             {
                 var readerWithImages = await _readerService.GetReaderWithImageById(readerId);
                 if (readerWithImages == null) return NotFound("Reader not found.");
-                return Ok(readerWithImages);
+                return readerWithImages;
             }
             catch (Exception ex)
             {
@@ -61,10 +66,9 @@ namespace TarotBooking.Controllers
 
         [HttpGet]
         [Route("reader-topic/{readerId}")]
-        public async Task<IActionResult> GetReaderTopic( string readerId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetReaderTopic(string readerId, int pageNumber = 1, int pageSize = 10)
         {
             var topics = await _readerTopicService.GetTopicsByReaderIdAsync(readerId, pageNumber, pageSize);
-
             return Ok(topics);
         }
 
@@ -98,10 +102,80 @@ namespace TarotBooking.Controllers
         public async Task<IActionResult> GetPagedReaders(int pageNumber = 1, int pageSize = 10, string? searchTerm = "")
         {
             var readers = await _readerService.GetPagedReadersAsync(pageNumber, pageSize, searchTerm);
-
-            return Ok(readers);
+            var result = _mapper.Map<List<ReaderDto>>(readers);
+            return Ok(result);
         }
 
+        [HttpGet("GetPagedReadersInfo")]
+        public async Task<IActionResult> GetPagedReadersInfo(
+            [FromQuery] string? readerName = null,
+            [FromQuery] float? minPrice = null,
+            [FromQuery] float? maxPrice = null,
+            [FromQuery] List<string>? topicIds = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var readersInfo = await _readerService.GetPagedReadersInfoAsync(readerName, minPrice, maxPrice, topicIds, pageNumber, pageSize);
+            return Ok(readersInfo);
+        }
+
+        [HttpGet]
+        [Route("active-readers-count")]
+        public async Task<IActionResult> GetActiveReadersCount()
+        {
+            try
+            {
+                var activeReaderCount = await _readerService.CountActiveReaders();
+                return Ok(activeReaderCount);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error fetching active readers count: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        [Route("create-reader")]
+        public async Task<ReaderDto?> CreateFollow([FromForm] CreateReaderModel createReaderModel)
+        {
+            var reader = await _readerService.CreateReader(createReaderModel);
+            return _mapper.Map<ReaderDto>(reader);
+        }
+
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromForm] ChangePasswordModel changePasswordModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Invalid data.");
+            }
+
+            try
+            {
+                var result = await _readerService.ChangePassword(changePasswordModel);
+
+                if (!result)
+                {
+                    return BadRequest("Old password is incorrect or password change failed.");
+                }
+
+                return Ok("Password changed successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error changing password: {ex.Message}");
+            }
+        }
+
+        
+        [HttpPost]
+        [Route("change-reader-status")]
+        public async Task<bool> ChangeReaderStatus(string readerId)
+        {
+            var reader = await _readerService.ChangeStatus(readerId);
+            return reader;
+        }
 
     }
 }

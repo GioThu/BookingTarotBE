@@ -10,7 +10,8 @@ namespace TarotBooking.Mappers
             return new Topic
             {
                 Id = Utils.Utils.GenerateIdModel("topic"),
-                Name = createTopicModel.Name
+                Name = createTopicModel.Name,
+                Status = "Active"
             };
         }
 

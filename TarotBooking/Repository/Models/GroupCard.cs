@@ -17,6 +17,7 @@ namespace TarotBooking.Models
         public bool? IsPublic { get; set; }
         public DateTime? CreateAt { get; set; }
         public string? Status { get; set; }
+        public string? Description { get; set; }
 
         public virtual ICollection<Card> Cards { get; set; }
         public virtual ICollection<Image> Images { get; set; }

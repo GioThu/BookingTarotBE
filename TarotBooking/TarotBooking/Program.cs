@@ -1,15 +1,13 @@
 using Google.Api;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Service.Services;
 using System.Text;
-//using TarotBooking.Handlers;
+using TarotBooking.Mapping;
+
 using TarotBooking.Models;
 using TarotBooking.Repositories.Implementations;
 using TarotBooking.Repositories.Interfaces;
@@ -37,8 +35,9 @@ namespace TarotBooking
             builder.Services.AddScoped<IGroupCardService, GroupCardService>();
             builder.Services.AddScoped<IReaderTopicService, ReaderTopicService>();
             builder.Services.AddScoped<IBookingService, BookingService>();
-
-
+            builder.Services.AddScoped<IFollowService, FollowService>();
+            builder.Services.AddScoped<ICardService, CardService>();
+            builder.Services.AddScoped<PaymentService>();   
 
             builder.Services.AddScoped<ICommentRepo, CommentRepo>();
             builder.Services.AddScoped<IUserRepo, UserRepo>();
@@ -52,10 +51,13 @@ namespace TarotBooking
             builder.Services.AddScoped<IReaderTopicRepo, ReaderTopicRepo>();
             builder.Services.AddScoped<IBookingTopicRepo, BookingTopicRepo>();
             builder.Services.AddScoped<IBookingRepo, BookingRepo>();
+            builder.Services.AddScoped<IFollowRepo, FollowRepo>();
+            builder.Services.AddScoped<ICardRepo, CardRepo>();
 
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddSingleton<FirebaseService>();
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 
@@ -94,7 +96,12 @@ namespace TarotBooking
                 };
                 options.SaveToken = true;
             })
-            .AddCookie()
+            .AddCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None; // Set SameSite to None
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Set SecurePolicy to Always
+                options.Cookie.HttpOnly = true; // Optionally, set HttpOnly for security
+            })
             .AddGoogle(googleOptions =>
             {
                 IConfigurationSection googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
@@ -113,7 +120,6 @@ namespace TarotBooking
                 options.UseSqlServer(builder.Configuration.GetConnectionString("BookingTarot")));
 
 
-            // Add Controllers
             builder.Services.AddControllers()
                  .AddJsonOptions(options =>
                  {
@@ -157,24 +163,19 @@ namespace TarotBooking
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins",
-                  builder =>
-                  {
-                      builder.WithOrigins("http://localhost:5173", "https://demo-tarot-webapp-7cpb.vercel.app", "https://www.bookingtarot.somee.com")
-                            .AllowAnyMethod()
-                            .AllowAnyHeader()
-                            .AllowCredentials();
-
-                  });
+                options.AddPolicy("AllowAllOrigins", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173", "https://demo-tarot-webapp-7cpb.vercel.app", "https://www.bookingtarot.somee.com")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
             });
-
-
 
             var app = builder.Build();
 
 
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -189,16 +190,16 @@ namespace TarotBooking
 
             app.UseCors("AllowAllOrigins");
 
-            
+            app.UseRouting();
 
-
-            // Use Authentication Middleware
             app.UseAuthentication();
 
-            // Use Authorization Middleware
             app.UseAuthorization();
 
-            app.MapControllers();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
 
             app.Run();
         }

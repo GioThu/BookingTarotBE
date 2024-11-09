@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using TarotBooking.Model.CommentModel;
 using TarotBooking.Models;
 using TarotBooking.Services.Interfaces;
+using AutoMapper;
+using Service.Model.CommentModel;
 
 namespace TarotBooking.Controllers
 {
@@ -11,40 +13,45 @@ namespace TarotBooking.Controllers
     public class CommentWebController : ControllerBase
     {
         private readonly ICommentService _commentService;
-        public CommentWebController(ICommentService commentService)
+        private readonly IMapper _mapper;
+
+        public CommentWebController(ICommentService commentService, IMapper mapper)
         {
             _commentService = commentService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         [Route("comments-list")]
-        public async Task<List<Comment>> GetAllComments()
+        public async Task<List<CommentDto>> GetAllComments()
         {
-            return await _commentService.GetAllComments();
+            var comments = await _commentService.GetAllComments();
+            var result = _mapper.Map<List<CommentDto>>(comments);
+            return result;
         }
-
 
         [HttpPost]
         [Route("create-comment")]
-        public async Task<Comment?> CreateComment([FromForm] CreateCommentModel createCommentModel)
+        public async Task<CommentDto?> CreateComment([FromForm] CreateCommentModel createCommentModel)
         {
-            return await _commentService.CreateComment(createCommentModel);
+            var comment = await _commentService.CreateComment(createCommentModel);
+            return _mapper.Map<CommentDto>(comment);
         }
 
         [HttpPost]
         [Route("update-comment")]
-        public async Task<Comment?> UpdateComment([FromForm] UpdateCommentModel updateCommentModel)
+        public async Task<CommentDto?> UpdateComment([FromForm] UpdateCommentModel updateCommentModel)
         {
-            return await _commentService.UpdateComment(updateCommentModel);
+            var comment = await _commentService.UpdateComment(updateCommentModel);
+            return _mapper.Map<CommentDto>(comment);
         }
 
         [HttpPost]
         [Route("delete-comment")]
-        public async Task<bool> DeleteComment([FromForm] Comment comment)
+        public async Task<bool> DeleteComment(String commentId)
         {
-            return await _commentService.DeleteComment(comment.Id);
+            return await _commentService.DeleteComment(commentId);
         }
-
 
         [HttpGet("GetCommentsByPostId/{postId}")]
         public async Task<IActionResult> GetCommentsByPostId(string postId, int pageNumber = 1, int pageSize = 10)

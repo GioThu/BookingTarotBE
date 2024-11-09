@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
+using Service.Model.ReaderModel;
 using System.Security.Claims;
 using TarotBooking.Model;
 
@@ -50,7 +51,7 @@ public class AuthController : ControllerBase
 
         if (token != null)
         {
-            return Redirect("http://localhost:5173/");
+            return Redirect($"http://localhost:5173/");
         }
 
         return Unauthorized(new { success = false, message = "Authentication failed." });
@@ -59,18 +60,15 @@ public class AuthController : ControllerBase
     [HttpGet("token")]
     public IActionResult GetToken()
     {
-        // Kiểm tra xem người dùng đã được xác thực chưa
         var response = HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme).Result;
         if (response.Principal == null )
         {
             return Unauthorized(new { success = false, message = "User is not authenticated." });
         }
 
-        // Lấy thông tin từ claims
         var fullName = response.Principal.FindFirstValue(ClaimTypes.Name);
         var email = response.Principal.FindFirstValue(ClaimTypes.Email);
 
-        // Tạo token cho người dùng
         var token = _jwtService.RegisterOrAuthenticateUser(fullName, email);
 
         if (token != null)
@@ -79,5 +77,32 @@ public class AuthController : ControllerBase
         }
 
         return BadRequest(new { success = false, message = "Token generation failed." });
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+    {
+        if (string.IsNullOrEmpty(loginRequest.Email) || string.IsNullOrEmpty(loginRequest.Password))
+        {
+            return BadRequest(new { success = false, message = "Email and password are required." });
+        }
+
+        try
+        {
+            var token = await _jwtService.LoginWithEmailAndPassword(loginRequest.Email, loginRequest.Password);
+
+            return Ok(new { success = true, token });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { success = false, message = ex.Message });
+        }
+    }
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        return Ok(new { success = true, message = "Logout successful." });
     }
 }

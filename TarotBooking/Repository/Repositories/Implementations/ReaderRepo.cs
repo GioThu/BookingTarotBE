@@ -20,6 +20,8 @@ namespace TarotBooking.Repository.Implementations
             return reader;
         }
 
+
+
         public async Task<bool> Delete(string id)
         {
             var reader = await _context.Readers.FindAsync(id);
@@ -33,12 +35,20 @@ namespace TarotBooking.Repository.Implementations
 
         public async Task<List<Reader>> GetAll()
         {
+            // Only return active readers
+            return await _context.Readers
+                .Where(reader => reader.Status == "Active")
+                .ToListAsync();
+        }
+
+        public async Task<List<Reader>> GetAllBlocked()
+        {
             return await _context.Set<Reader>().ToListAsync();
         }
 
         public async Task<Reader?> GetById(string id)
         {
-            return await _context.Readers.FirstOrDefaultAsync(cate => cate.Id == id);
+            return await _context.Readers.FirstOrDefaultAsync(reader => reader.Id == id);
         }
 
         public async Task<Reader> Update(Reader reader)
@@ -66,7 +76,6 @@ namespace TarotBooking.Repository.Implementations
             return existingReader;
         }
 
-
         public async Task<List<Image>> GetReaderImagesById(string readerId)
         {
             if (string.IsNullOrWhiteSpace(readerId))
@@ -75,8 +84,26 @@ namespace TarotBooking.Repository.Implementations
             }
 
             return await _context.Images
-                                 .Where(image => image.ReaderId == readerId)
-                                 .ToListAsync();
+                         .Where(image => image.ReaderId == readerId)
+                         .OrderByDescending(image => image.CreateAt)
+                         .ToListAsync();
         }
+
+        public async Task<Reader> GetByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException("Email cannot be null or empty.", nameof(email));
+            }
+
+            return await _context.Readers.FirstOrDefaultAsync(reader => reader.Email == email && reader.Status == "Active");
+        }
+
+        public async Task<int> CountActiveReaders()
+        {
+            return await _context.Readers.CountAsync(reader => reader.Status == "Active");
+        }
+
+
     }
 }

@@ -17,6 +17,14 @@ namespace TarotBooking.Services.Implementations
 
         public async Task<Topic?> CreateTopic(CreateTopicModel createTopicDto)
         {
+            var allTopics = await _topicRepo.GetAll();
+            var duplicateActiveTopic = allTopics.Any(t => t.Name == createTopicDto.Name && t.Status == "Active");
+
+            if (duplicateActiveTopic)
+            {
+                throw new Exception("A topic with this name already exists and is active.");
+            }
+
             var createTopic = createTopicDto.ToCreateTopic();
 
             if (createTopic == null) throw new Exception("Unable to create topic!");
@@ -24,13 +32,17 @@ namespace TarotBooking.Services.Implementations
             return await _topicRepo.Add(createTopic);
         }
 
+ 
+
         public async Task<bool> DeleteTopic(string topicId)
         {
             var topic = await _topicRepo.GetById(topicId);
 
             if (topic == null) throw new Exception("Unable to find topic!");
 
-            return await _topicRepo.Delete(topicId);
+            topic.Status = "Blocked";
+
+            return await _topicRepo.Update(topic) != null;
         }
 
         public async Task<List<Topic>> GetAllTopics()

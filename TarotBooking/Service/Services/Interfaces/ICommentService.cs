@@ -1,4 +1,5 @@
-﻿using TarotBooking.Model.CommentModel;
+﻿using Service.Model.CommentModel;
+using TarotBooking.Model.CommentModel;
 using TarotBooking.Models;
 
 namespace TarotBooking.Services.Interfaces
@@ -9,6 +10,6 @@ namespace TarotBooking.Services.Interfaces
         Task<Comment?> CreateComment(CreateCommentModel createCommentModel);
         Task<Comment?> UpdateComment(UpdateCommentModel updateCommentModel);
         Task<bool> DeleteComment(string commentId);
-        Task<List<Comment>> GetCommentsByPostIdAsync(string postId, int pageNumber, int pageSize);
+        Task<CommentResponse> GetCommentsByPostIdAsync(string postId, int pageNumber, int pageSize);
     }
 }

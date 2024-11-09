@@ -1,4 +1,5 @@
-﻿using TarotBooking.Model.TopicModel;
+﻿using Service.Model.UserModel;
+using TarotBooking.Model.TopicModel;
 using TarotBooking.Model.UserModel;
 using TarotBooking.Models;
 
@@ -11,7 +12,8 @@ namespace TarotBooking.Services.Interfaces
         Task<User?> UpdateUser(UpdateUserModel updateUserDto);
         Task<bool> DeleteUser(string UserId);
         Task<UserWithImageModel?> GetUserWithImageById(string userId);
-        Task<List<User>> GetPagedUsersAsync(int pageNumber, int pageSize, string searchTerm);
+        Task<PagedUserModel> GetPagedUsersAsync(int pageNumber, int pageSize, string searchTerm);
         Task<User?> GetUserWithEmail(string email);
+        Task<bool> ChangeStatus(string userId);
     }
 }

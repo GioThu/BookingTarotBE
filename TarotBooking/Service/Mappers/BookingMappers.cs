@@ -11,7 +11,7 @@ namespace TarotBooking.Mappers
                 Id = Utils.Utils.GenerateIdModel("Booking"),
                 UserId = createBookingModel.UserId,
                 ReaderId = createBookingModel.ReaderId,
-                Status = 1,
+                Status = 0,
                 TimeStart = createBookingModel.TimeStart,
                 TimeEnd = createBookingModel.TimeEnd,
                 CreateAt = Utils.Utils.GetTimeNow(),

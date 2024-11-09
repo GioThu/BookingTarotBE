@@ -7,7 +7,7 @@ namespace TarotBooking.Repository.Implementations
     public class TopicRepo : ITopicRepo
     {
         private readonly BookingTarotContext _context;
-
+        private const string ActiveStatus = "Active";
         public TopicRepo(BookingTarotContext context)
         {
             _context = context;
@@ -23,9 +23,7 @@ namespace TarotBooking.Repository.Implementations
         public async Task<bool> Delete(string id)
         {
             var topic = await _context.Topics.FindAsync(id);
-
             if (topic == null) return false;
-
             _context.Topics.Remove(topic);
             await _context.SaveChangesAsync();
             return true;
@@ -33,7 +31,9 @@ namespace TarotBooking.Repository.Implementations
 
         public async Task<List<Topic>> GetAll()
         {
-            return await _context.Set<Topic>().ToListAsync();
+            return await _context.Topics
+                .Where(topic => topic.Status == ActiveStatus)
+                .ToListAsync();
         }
 
         public async Task<Topic?> GetById(string id)

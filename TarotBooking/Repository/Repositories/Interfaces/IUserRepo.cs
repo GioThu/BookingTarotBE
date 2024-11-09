@@ -10,6 +10,7 @@ namespace TarotBooking.Repositories.Interfaces
         Task<User?> GetById(string id);
         Task<User?> GetByEmail(string email);
         Task<List<User>> GetAll();
+        Task<List<User>> GetAllBlocked();
         Task<List<Image>> GetUserImagesById(string userId);
 
     }

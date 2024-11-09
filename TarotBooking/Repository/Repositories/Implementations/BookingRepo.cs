@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TarotBooking.Models;
 using TarotBooking.Repositories.Interfaces;
 
@@ -100,5 +101,45 @@ namespace TarotBooking.Repository.Implementations
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task<int> GetBookingCountToday(string readerId)
+        {
+            return await _context.Bookings
+                .CountAsync(b => b.ReaderId == readerId && b.TimeStart.Value.Date == DateTime.UtcNow.Date);
+        }
+
+        public async Task<int> GetTotalBookingCount(string readerId)
+        {
+            return await _context.Bookings
+                .CountAsync(b => b.ReaderId == readerId);
+        }
+
+        public async Task<List<Booking>> GetBookingsByReaderId(string readerId, List<int>? statuses, DateTime? startDate, DateTime? endDate)
+        {
+            var query = _context.Bookings.AsQueryable();
+
+            // Lọc theo readerId
+            query = query.Where(b => b.ReaderId == readerId);
+
+            // Lọc theo status (nếu có)
+            if (statuses != null && statuses.Any())
+            {
+                query = query.Where(b => statuses.Contains((int)b.Status)); 
+            }
+
+            // Lọc theo ngày
+            if (startDate.HasValue)
+            {
+                query = query.Where(b => b.TimeStart >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(b => b.TimeStart <= endDate.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
     }
 }
+

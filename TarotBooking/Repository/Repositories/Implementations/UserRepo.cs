@@ -33,6 +33,13 @@ namespace TarotBooking.Repository.Implementations
 
         public async Task<List<User>> GetAll()
         {
+            return await _context.Users
+                                 .Where(user => user.Status == "Active") 
+                                 .ToListAsync();
+        }
+
+        public async Task<List<User>> GetAllBlocked()
+        {
             return await _context.Set<User>().ToListAsync();
         }
 
@@ -69,8 +76,9 @@ namespace TarotBooking.Repository.Implementations
         public async Task<List<Image>> GetUserImagesById(string userId)
         {
             return await _context.Images
-                .Where(img => img.UserId == userId)
-                .ToListAsync();
+                  .Where(img => img.UserId == userId)
+                  .OrderByDescending(img => img.CreateAt) 
+                  .ToListAsync();
         }
 
         public async Task<User?> GetByEmail(string email)

@@ -7,7 +7,7 @@ namespace TarotBooking.Repository.Implementations
     public class PostRepo : IPostRepo
     {
         private readonly BookingTarotContext _context;
-
+        private const string ActiveStatus = "Active";
         public PostRepo(BookingTarotContext context)
         {
             _context = context;
@@ -33,7 +33,9 @@ namespace TarotBooking.Repository.Implementations
 
         public async Task<List<Post>> GetAll()
         {
-            return await _context.Set<Post>().ToListAsync();
+            return await _context.Posts
+                .Where(post => post.Status == ActiveStatus)
+                .ToListAsync();
         }
 
         public async Task<Post?> GetById(string id)
@@ -71,6 +73,12 @@ namespace TarotBooking.Repository.Implementations
             return await _context.Images
                 .Where(img => img.PostId == postId)
                 .ToListAsync();
+        }
+
+        public async Task<int> GetPostCountByReaderId(string readerId)
+        {
+            return await _context.Posts
+               .CountAsync(post => post.ReaderId == readerId && post.Status == ActiveStatus);
         }
 
     }

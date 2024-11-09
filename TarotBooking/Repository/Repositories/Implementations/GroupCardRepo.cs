@@ -81,5 +81,15 @@ namespace TarotBooking.Repository.Implementations
             return groupCards!;
         }
 
+        public async Task<int> GetGroupCardsCountByReaderIdAsync(string readerId)
+        {
+            var count = await _context.UserGroupCards
+                                       .Where(ugc => ugc.ReaderId == readerId)
+                                       .Select(ugc => ugc.Group)
+                                       .CountAsync();
+
+            return count;
+        }
+
     }
 }

@@ -7,6 +7,7 @@ namespace TarotBooking.Model.GroupCardModel
         public string? Name { get; set; }
         public IFormFile image { get; set; }
         public string? ReaderId { get; set; }
+        public string? Description { get; set; }
 
     }
 }
